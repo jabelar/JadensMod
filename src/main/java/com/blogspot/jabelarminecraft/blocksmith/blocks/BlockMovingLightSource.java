@@ -16,14 +16,11 @@
 
 package com.blogspot.jabelarminecraft.blocksmith.blocks;
 
-import java.util.Random;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.BlockState;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.tileentity.TileEntity;
@@ -49,8 +46,7 @@ public class BlockMovingLightSource extends Block implements ITileEntityProvider
         super(Material.air );
         setUnlocalizedName("movinglightsource");
         setDefaultState(blockState.getBaseState());
-        setTickRandomly(true);
-        setCreativeTab(CreativeTabs.tabDecorations);
+        setTickRandomly(false);
         setLightLevel(1.0F);
         setBlockBounds(0.5F, 0.5F, 0.5F, 0.5F, 0.5F, 0.5F);
     }
@@ -104,13 +100,6 @@ public class BlockMovingLightSource extends Block implements ITileEntityProvider
     public IBlockState getStateFromMeta(int meta)
     {
         return getDefaultState();
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public void randomDisplayTick(World worldIn, BlockPos pos, IBlockState state, Random rand)
-    {
-
     }
 
     @Override
