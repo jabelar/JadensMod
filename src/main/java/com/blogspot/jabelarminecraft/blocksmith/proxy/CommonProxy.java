@@ -19,6 +19,9 @@
 
 package com.blogspot.jabelarminecraft.blocksmith.proxy;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.player.EntityPlayer;
@@ -73,6 +76,12 @@ public class CommonProxy
 {
     
     protected int modEntityID = 0;
+    
+    /*
+     * Sometimes useful to have list of all item types, including subtypes
+     */
+	public Map<Integer, Integer> itemSubTypeMap = new HashMap<Integer, Integer>();
+	public Map<Integer, Integer> sparseItemSubTypeMap = new HashMap<Integer, Integer>();
      
     public void fmlLifeCycleEvent(FMLPreInitializationEvent event)
     { 
@@ -118,6 +127,8 @@ public class CommonProxy
 	public void fmlLifeCycleEvent(FMLPostInitializationEvent event)
     {
         // can do some inter-mod stuff here
+        getSubTypesForItems();
+        getSparseSubTypesForItems();
     }
 
 	public void fmlLifeCycleEvent(FMLServerAboutToStartEvent event) 
@@ -490,5 +501,15 @@ public class CommonProxy
 
         BlockSmith.deconstructedItemsStat = (StatBasic) (new StatBasic("stat.deconstructeditems", new ChatComponentTranslation("stat.deconstructeditems", new Object[0])).registerStat());
 		
+	}
+	
+	protected Map getSubTypesForItems()
+	{
+		return itemSubTypeMap;
+	}
+	
+	protected Map getSparseSubTypesForItems()
+	{
+		return sparseItemSubTypeMap;
 	}
 }

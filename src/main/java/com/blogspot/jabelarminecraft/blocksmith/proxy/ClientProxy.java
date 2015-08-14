@@ -19,6 +19,11 @@
 
 package com.blogspot.jabelarminecraft.blocksmith.proxy;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelPig;
 import net.minecraft.client.renderer.entity.RenderItem;
@@ -239,4 +244,43 @@ public class ClientProxy extends CommonProxy
        sphere.draw(0.5F, 32, 32);
        GL11.glEndList();
     }
+    
+    @Override
+	protected Map getSubTypesForItems()
+    {
+		List subItemList = new ArrayList();
+		for (Object theObj: Item.itemRegistry)
+		{
+			((Item)theObj).getSubItems((Item)theObj, null, subItemList);
+			itemSubTypeMap.put(Item.itemRegistry.getIDForObject(theObj), subItemList.size());
+			subItemList.clear();
+		}
+		// DEBUG
+		System.out.println("Item subtypes list = "+itemSubTypeMap.toString() );
+		return itemSubTypeMap;
+    }
+    
+    @Override
+	protected Map getSparseSubTypesForItems()
+    {
+		Iterator theIterator = itemSubTypeMap.entrySet().iterator();
+
+		sparseItemSubTypeMap.clear();
+		while (theIterator.hasNext())
+		{
+	        Map.Entry<Integer, Integer> pair = (Map.Entry)theIterator.next();
+	        if (pair.getValue() > 1)
+	        {
+	        	sparseItemSubTypeMap.put(pair.getKey(), pair.getValue());
+	        }
+	        theIterator.remove(); // avoids a ConcurrentModificationException
+		}
+		
+        // DEBUG
+        System.out.println("Sparse item id list = "+sparseItemSubTypeMap.toString());
+			
+		return sparseItemSubTypeMap;
+    }
+    
+    
 }
