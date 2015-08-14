@@ -19,6 +19,9 @@
 
 package com.blogspot.jabelarminecraft.blocksmith.proxy;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -33,6 +36,7 @@ import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
@@ -118,6 +122,8 @@ public class ClientProxy extends CommonProxy
         BlockSmith.versionChecker = new VersionChecker();
         Thread versionCheckThread = new Thread(BlockSmith.versionChecker, "Version Check");
         versionCheckThread.start();
+        
+        getSparseItemPayload();
     }
 
     /*
@@ -282,5 +288,41 @@ public class ClientProxy extends CommonProxy
 		return sparseItemSubTypeMap;
     }
     
-    
+    public ByteBuf getSparseItemPayload()
+    {
+        ByteBuf theBuffer = Unpooled.buffer();
+        Iterator theIterator = sparseItemSubTypeMap.entrySet().iterator();
+        
+        // DEBUG
+        String outputString = "Sparse items with metadata = ";
+
+        while (theIterator.hasNext())
+        {            
+            Map.Entry<Integer, Integer> pair = (Map.Entry)theIterator.next();
+            
+            // write item id and number of sub-types
+            theBuffer.writeInt(pair.getKey());
+            theBuffer.writeInt(pair.getValue());
+            
+            // DEBUG
+            // DEBUG
+            System.out.println("Next item = "+pair.getKey().toString()+" "+pair.getValue().toString());
+            outputString += pair.getKey().toString()+" "+pair.getValue().toString();
+            
+            // write metadata values for each of the sub-types
+            ArrayList<ItemStack> subTypes = new ArrayList();
+            Item theItem = Item.getItemById(pair.getKey());
+            theItem.getSubItems(theItem, null, subTypes);
+            for (int i = 0; i < subTypes.size(); i++)
+            {
+                theBuffer.writeInt(subTypes.get(i).getMetadata());
+                outputString += " "+subTypes.get(i).getMetadata();
+            }
+            theIterator.remove(); // avoids a ConcurrentModificationException
+        }
+        
+        // DEBUG
+        System.out.println(outputString);
+        return theBuffer;
+    }
 }
