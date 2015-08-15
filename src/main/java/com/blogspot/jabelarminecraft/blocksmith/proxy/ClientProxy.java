@@ -123,7 +123,7 @@ public class ClientProxy extends CommonProxy
         Thread versionCheckThread = new Thread(BlockSmith.versionChecker, "Version Check");
         versionCheckThread.start();
         
-        getSparseItemPayload();
+        getCompleteItemStackList(getSparseItemPayload());
     }
 
     /*
@@ -294,7 +294,7 @@ public class ClientProxy extends CommonProxy
         Iterator theIterator = sparseItemSubTypeMap.entrySet().iterator();
         
         // DEBUG
-        String outputString = "Sparse items with metadata = ";
+        String outputString = "Sparse items with metadata =";
 
         while (theIterator.hasNext())
         {            
@@ -302,12 +302,10 @@ public class ClientProxy extends CommonProxy
             
             // write item id and number of sub-types
             theBuffer.writeInt(pair.getKey());
-            theBuffer.writeInt(pair.getValue());
+            theBuffer.writeByte(pair.getValue());
             
             // DEBUG
-            // DEBUG
-            System.out.println("Next item = "+pair.getKey().toString()+" "+pair.getValue().toString());
-            outputString += pair.getKey().toString()+" "+pair.getValue().toString();
+            outputString += " "+pair.getKey().toString()+" "+pair.getValue().toString();
             
             // write metadata values for each of the sub-types
             ArrayList<ItemStack> subTypes = new ArrayList();
@@ -324,5 +322,35 @@ public class ClientProxy extends CommonProxy
         // DEBUG
         System.out.println(outputString);
         return theBuffer;
+    }
+
+    /*
+     * Provides a list of item stacks giving every registered item along with its metadata variants
+     * based on a message payload from the client that gives the valid metadata values for those
+     * items with variants.
+     */
+    public List<ItemStack> getCompleteItemStackList(ByteBuf theBuffer)
+    {
+        List<ItemStack> theList = new ArrayList();
+        while (theBuffer.isReadable())
+        {
+            int theID = theBuffer.readInt();
+            byte numVariants = theBuffer.readByte();
+            if (numVariants > 1)
+            {
+                for (int i = 0; i < numVariants; i++)
+                {
+                    theList.add(new ItemStack(Item.getItemById(theID), 1, theBuffer.readInt()));
+                }
+            }
+            else
+            {
+                theList.add(new ItemStack(Item.getItemById(theID)));
+            }
+        }
+        // DEBUG
+        System.out.println(theList.toString());
+        
+        return theList;      
     }
 }
