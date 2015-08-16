@@ -20,6 +20,7 @@
 package com.blogspot.jabelarminecraft.blocksmith;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlock;
@@ -108,15 +109,12 @@ public class FMLEventHandler
     @SubscribeEvent(priority=EventPriority.NORMAL, receiveCanceled=true)
     public void onEvent(PlayerLoggedInEvent event)
     {
-        if (event.player.getDisplayName().equals("MistMaestro"))
-        {
-            // DEBUG
-            System.out.println("Welcome Master!");
-        }
-        
         // DEBUG
-//        System.out.println("WorldData hasCastleSpawned ="+WorldData.get(((EntityPlayerSP)thePlayer).movementInput.worldObj).getHasCastleSpwaned()+
-//                ", familyCowHasGivenLead ="+WorldData.get(((EntityPlayerSP)thePlayer).movementInput.worldObj).getFamilyCowHasGivenLead());
+        System.out.println("PlayerLoggedInEvent");
+        if (!event.player.worldObj.isRemote)
+        {
+            (BlockSmith.network).sendTo(new MessageRequestItemStackRegistryFromClient(), (EntityPlayerMP) event.player);
+        }
     }
 
     @SubscribeEvent(priority=EventPriority.NORMAL, receiveCanceled=true)
@@ -169,12 +167,15 @@ public class FMLEventHandler
         }
         else if (event.phase == TickEvent.Phase.START && !event.player.worldObj.isRemote)
         {
-            if (!haveRequestedItemStackRegistry)
-            {
-                BlockSmith.network.sendToAll(new MessageRequestItemStackRegistryFromClient());
-                haveRequestedItemStackRegistry = true;
-            }
-            
+//            if (event.player.inventory.getFirstEmptyStack() >= 0 
+//                    && !BlockSmith.proxy.getItemStackRegistry().isEmpty())
+//            {
+//                event.player.inventory.addItemStackToInventory(
+//                        (ItemStack) BlockSmith.proxy.getItemStackRegistry().get(
+//                                event.player.getRNG()
+//                                .nextInt(BlockSmith.proxy.getItemStackRegistry().size())));
+//            }
+          
             if (event.player.getCurrentEquippedItem() != null)
             {
                 if (event.player.getCurrentEquippedItem().getItem() == ItemBlock.getItemFromBlock(Blocks.torch))
