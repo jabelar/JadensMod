@@ -23,6 +23,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
@@ -30,7 +31,6 @@ import net.minecraft.util.MathHelper;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
@@ -104,20 +104,12 @@ public class FMLEventHandler
 //    {
 //        
 //    }
-
-    @SubscribeEvent(priority=EventPriority.NORMAL, receiveCanceled=true)
-    public void onEvent(PlayerLoggedInEvent event)
-    {
-        if (event.player.getDisplayName().equals("MistMaestro"))
-        {
-            // DEBUG
-            System.out.println("Welcome Master!");
-        }
-        
-        // DEBUG
-//        System.out.println("WorldData hasCastleSpawned ="+WorldData.get(((EntityPlayerSP)thePlayer).movementInput.worldObj).getHasCastleSpwaned()+
-//                ", familyCowHasGivenLead ="+WorldData.get(((EntityPlayerSP)thePlayer).movementInput.worldObj).getFamilyCowHasGivenLead());
-    }
+//
+//    @SubscribeEvent(priority=EventPriority.NORMAL, receiveCanceled=true)
+//    public void onEvent(PlayerLoggedInEvent event)
+//    {
+//        
+//    }
 
     @SubscribeEvent(priority=EventPriority.NORMAL, receiveCanceled=true)
     public void onEvent(PlayerLoggedOutEvent event)
@@ -150,6 +142,7 @@ public class FMLEventHandler
 //    }
 
     boolean haveRequestedItemStackRegistry = false;
+    boolean haveGivenGift = false;
             
     @SubscribeEvent(priority=EventPriority.NORMAL, receiveCanceled=true)
     public void onEvent(PlayerTickEvent event)
@@ -173,6 +166,17 @@ public class FMLEventHandler
             {
                 BlockSmith.network.sendToAll(new MessageRequestItemStackRegistryFromClient());
                 haveRequestedItemStackRegistry = true;
+            }
+
+            int registrySize = BlockSmith.proxy.getItemStackRegistry().size();
+            if (!haveGivenGift && registrySize > 1)
+            {
+                ItemStack theGiftItemStack = (ItemStack) BlockSmith.proxy.getItemStackRegistry().get(
+                        event.player.getRNG().nextInt(registrySize));
+                // DEBUG
+                System.out.println("Giving a gift = "+theGiftItemStack.toString());
+                event.player.inventory.addItemStackToInventory(theGiftItemStack);
+                haveGivenGift = true;
             }
             
             if (event.player.getCurrentEquippedItem() != null)
