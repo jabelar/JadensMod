@@ -80,8 +80,8 @@ public class CommonProxy
     /*
      * Sometimes useful to have list of all item types, including subtypes
      */
+	public Map<Integer, Integer> itemListFromRegistry = new HashMap<Integer, Integer>();
 	public Map<Integer, Integer> itemSubTypeMap = new HashMap<Integer, Integer>();
-	public Map<Integer, Integer> sparseItemSubTypeMap = new HashMap<Integer, Integer>();
      
     public void fmlLifeCycleEvent(FMLPreInitializationEvent event)
     { 
@@ -128,7 +128,7 @@ public class CommonProxy
     {
         // can do some inter-mod stuff here
         getSubTypesForItems();
-        getSparseSubTypesForItems();
+        initializeMapOfItemMetadata();
     }
 
 	public void fmlLifeCycleEvent(FMLServerAboutToStartEvent event) 
@@ -503,13 +503,13 @@ public class CommonProxy
 		
 	}
 	
-	protected Map getSubTypesForItems()
+	protected void getSubTypesForItems()
 	{
-		return itemSubTypeMap;
+	    return;
 	}
 	
-	protected Map getSparseSubTypesForItems()
+	protected void initializeMapOfItemMetadata()
 	{
-		return sparseItemSubTypeMap;
+		return;
 	}
 }

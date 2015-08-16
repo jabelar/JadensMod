@@ -44,6 +44,7 @@ import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 import org.lwjgl.input.Keyboard;
@@ -123,7 +124,7 @@ public class ClientProxy extends CommonProxy
         Thread versionCheckThread = new Thread(BlockSmith.versionChecker, "Version Check");
         versionCheckThread.start();
         
-        getCompleteItemStackList(getSparseItemPayload());
+        getCompleteItemStackList(getItemListPayload());
     }
 
     /*
@@ -252,49 +253,44 @@ public class ClientProxy extends CommonProxy
     }
     
     @Override
-	protected Map getSubTypesForItems()
+	protected void getSubTypesForItems()
     {
 		List subItemList = new ArrayList();
 		for (Object theObj: Item.itemRegistry)
 		{
 			((Item)theObj).getSubItems((Item)theObj, null, subItemList);
-			itemSubTypeMap.put(Item.itemRegistry.getIDForObject(theObj), subItemList.size());
+			itemListFromRegistry.put(Item.itemRegistry.getIDForObject(theObj), subItemList.size());
 			subItemList.clear();
 		}
+		
 		// DEBUG
-		System.out.println("Item subtypes list = "+itemSubTypeMap.toString() );
-		return itemSubTypeMap;
+		System.out.println("Item subtypes list = "+itemListFromRegistry.toString() );
     }
     
     @Override
-	protected Map getSparseSubTypesForItems()
+	protected void initializeMapOfItemMetadata()
     {
-		Iterator theIterator = itemSubTypeMap.entrySet().iterator();
+		Iterator theIterator = itemListFromRegistry.entrySet().iterator();
 
-		sparseItemSubTypeMap.clear();
+		itemSubTypeMap.clear();
 		while (theIterator.hasNext())
 		{
 	        Map.Entry<Integer, Integer> pair = (Map.Entry)theIterator.next();
-	        if (pair.getValue() > 1)
-	        {
-	        	sparseItemSubTypeMap.put(pair.getKey(), pair.getValue());
-	        }
+        	itemSubTypeMap.put(pair.getKey(), pair.getValue());
 	        theIterator.remove(); // avoids a ConcurrentModificationException
 		}
 		
         // DEBUG
-        System.out.println("Sparse item id list = "+sparseItemSubTypeMap.toString());
-			
-		return sparseItemSubTypeMap;
-    }
+        System.out.println("Sparse item id list = "+itemSubTypeMap.toString());
+   }
     
-    public ByteBuf getSparseItemPayload()
+    public ByteBuf getItemListPayload()
     {
         ByteBuf theBuffer = Unpooled.buffer();
-        Iterator theIterator = sparseItemSubTypeMap.entrySet().iterator();
-        
+        Iterator theIterator = itemSubTypeMap.entrySet().iterator();
+       
         // DEBUG
-        String outputString = "Sparse items with metadata =";
+        String outputString = "Sparse items with metadata = ";
 
         while (theIterator.hasNext())
         {            
@@ -305,24 +301,35 @@ public class ClientProxy extends CommonProxy
             theBuffer.writeByte(pair.getValue());
             
             // DEBUG
-            outputString += " "+pair.getKey().toString()+" "+pair.getValue().toString();
+            outputString += " id = "+pair.getKey()+" "+pair.getValue();
             
             // write metadata values for each of the sub-types
             ArrayList<ItemStack> subTypes = new ArrayList();
             Item theItem = Item.getItemById(pair.getKey());
-            theItem.getSubItems(theItem, null, subTypes);
+            theItem.getSubItems(theItem, null, subTypes); // This updates the subTypes list passed in
             for (int i = 0; i < subTypes.size(); i++)
             {
                 theBuffer.writeInt(subTypes.get(i).getMetadata());
+                // DEBUG
                 outputString += " "+subTypes.get(i).getMetadata();
+                boolean hasNBT = subTypes.get(i).hasTagCompound();
+                theBuffer.writeBoolean(hasNBT);
+                if (hasNBT)
+                {
+                    // DEBUG
+                    outputString+= " has NBT";
+                    ByteBufUtils.writeTag(theBuffer, subTypes.get(i).getTagCompound());
+                }
             }
             theIterator.remove(); // avoids a ConcurrentModificationException
         }
         
         // DEBUG
         System.out.println(outputString);
+        
         return theBuffer;
     }
+
 
     /*
      * Provides a list of item stacks giving every registered item along with its metadata variants
@@ -332,25 +339,32 @@ public class ClientProxy extends CommonProxy
     public List<ItemStack> getCompleteItemStackList(ByteBuf theBuffer)
     {
         List<ItemStack> theList = new ArrayList();
+        
+        // First add everything from the buffer
         while (theBuffer.isReadable())
         {
+//            // DEBUG
+//            System.out.println("The reader index ="+theBuffer.readerIndex());
             int theID = theBuffer.readInt();
             byte numVariants = theBuffer.readByte();
-            if (numVariants > 1)
+            for (int i = 0; i < numVariants; i++)
             {
-                for (int i = 0; i < numVariants; i++)
+                ItemStack theStack = new ItemStack(Item.getItemById(theID), 1, theBuffer.readInt());
+                boolean hasNBT = theBuffer.readBoolean();
+                if (hasNBT)
                 {
-                    theList.add(new ItemStack(Item.getItemById(theID), 1, theBuffer.readInt()));
+                    theStack.setTagCompound(ByteBufUtils.readTag(theBuffer));
                 }
-            }
-            else
-            {
-                theList.add(new ItemStack(Item.getItemById(theID)));
+               theList.add(theStack);
             }
         }
+
+        // Then add everything else from the item registry
+        
+        
         // DEBUG
         System.out.println(theList.toString());
-        
+
         return theList;      
     }
 }
