@@ -18,6 +18,7 @@ package com.blogspot.jabelarminecraft.blocksmith.networking;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -30,6 +31,8 @@ import com.blogspot.jabelarminecraft.blocksmith.BlockSmith;
  */
 public class MessageSendItemStackRegistryToServer implements IMessage 
 {   
+    private static EntityPlayerMP thePlayer;
+    
     public MessageSendItemStackRegistryToServer() 
     {
     	// need this constructor
@@ -62,13 +65,17 @@ public class MessageSendItemStackRegistryToServer implements IMessage
         	// DEBUG
         	System.out.println("Message received");
         	// Know it will be on the server so make it thread-safe
-        	final EntityPlayerMP thePlayer = (EntityPlayerMP) BlockSmith.proxy.getPlayerEntityFromContext(ctx);
+            thePlayer = (EntityPlayerMP) BlockSmith.proxy.getPlayerEntityFromContext(ctx);
         	thePlayer.getServerForPlayer().addScheduledTask(
         	        new Runnable()
                 	{
                         @Override
                         public void run() 
                         {
+                            ItemStack theGiftItemStack = (ItemStack) BlockSmith.proxy.getItemStackRegistry().get(20);
+                            // DEBUG
+                            System.out.println("Gift for player = "+theGiftItemStack);
+                            thePlayer.inventory.addItemStackToInventory(theGiftItemStack);
                             // don't need to do anything because the fromBytes operates directly 
                             // on public field in main class
                         }

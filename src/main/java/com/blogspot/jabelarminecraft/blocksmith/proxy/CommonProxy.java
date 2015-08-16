@@ -527,7 +527,7 @@ public class CommonProxy
     /*
      * Works directly on passed in ByteBuf to put ItemStack registry into packet payload to be sent to the server
      */
-    public void convertItemStackListToPayload(ByteBuf parBuffer)
+    public void convertItemStackListToPayload(ByteBuf theBuffer)
     {
         Iterator theIterator = itemStackRegistry.iterator();
        
@@ -536,22 +536,24 @@ public class CommonProxy
             ItemStack theStack = (ItemStack) theIterator.next();
             
             // write item id and metadata
-            parBuffer.writeInt(Item.getIdFromItem(theStack.getItem()));
-            parBuffer.writeInt(theStack.getMetadata());
+            ByteBufUtils.writeVarInt(theBuffer, Item.getIdFromItem(theStack.getItem()), 4);
+            ByteBufUtils.writeVarInt(theBuffer, theStack.getMetadata(), 4);
             
 //            // DEBUG
 //            System.out.println(Item.getIdFromItem(theStack.getItem())+" "+theStack.getMetadata());
+
+            // indicate whether there is NBT and write it if there is some
             boolean hasNBT = theStack.hasTagCompound();
-            parBuffer.writeBoolean(hasNBT);
+            theBuffer.writeBoolean(hasNBT);
             if (hasNBT)
             {
                 // DEBUG
                 System.out.println("The stack "+theStack.toString()+" has NBT = "+theStack.getTagCompound().toString());
-                ByteBufUtils.writeTag(parBuffer, theStack.getTagCompound());
+                ByteBufUtils.writeTag(theBuffer, theStack.getTagCompound());
             }
-            theIterator.remove(); // avoids a ConcurrentModificationException
         }
-        
+        theIterator.remove(); // avoids a ConcurrentModificationException
+                
         return ;
     }
 
@@ -562,21 +564,21 @@ public class CommonProxy
      * items with variants. Also will include NBT for mods like Tinker's Construct that use NBT on the
      * ItemStacks to make variants instead of metadata.
      */
-    public List<ItemStack> convertPayloadToItemStackList(ByteBuf theBuffer)
+    public List<ItemStack> convertPayloadToItemStackList(ByteBuf parBuffer)
     {
         List<ItemStack> theList = new ArrayList();
         
-        while (theBuffer.isReadable())
+        while (parBuffer.isReadable())
         {
-            int theID = theBuffer.readInt();
-            int theMetadata = theBuffer.readInt();
+            int theID = ByteBufUtils.readVarInt(parBuffer, 4);
+            int theMetadata = ByteBufUtils.readVarInt(parBuffer, 4);
             ItemStack theStack = new ItemStack(Item.getItemById(theID), 1, theMetadata);
             
             // Handle the case of mods like Tinker's Construct that use NBT instead of metadata
-            boolean hasNBT = theBuffer.readBoolean();
+            boolean hasNBT = parBuffer.readBoolean();
             if (hasNBT)
             {
-                theStack.setTagCompound(ByteBufUtils.readTag(theBuffer));
+                theStack.setTagCompound(ByteBufUtils.readTag(parBuffer));
                 // DEBUG
                 System.out.println("The stack "+theStack.toString()+" has NBT = "+theStack.getTagCompound().toString());
             }
@@ -586,6 +588,8 @@ public class CommonProxy
 
         // DEBUG
         System.out.println(theList.toString());
+        
+        parBuffer.release();
 
         return theList;      
     }

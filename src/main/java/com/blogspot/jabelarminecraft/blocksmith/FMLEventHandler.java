@@ -20,6 +20,7 @@
 package com.blogspot.jabelarminecraft.blocksmith;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlock;
@@ -104,12 +105,26 @@ public class FMLEventHandler
 //    {
 //        
 //    }
+<<<<<<< HEAD
 //
 //    @SubscribeEvent(priority=EventPriority.NORMAL, receiveCanceled=true)
 //    public void onEvent(PlayerLoggedInEvent event)
 //    {
 //        
 //    }
+=======
+
+    @SubscribeEvent(priority=EventPriority.NORMAL, receiveCanceled=true)
+    public void onEvent(PlayerLoggedInEvent event)
+    {
+        // DEBUG
+        System.out.println("PlayerLoggedInEvent");
+        if (!event.player.worldObj.isRemote)
+        {
+            (BlockSmith.network).sendTo(new MessageRequestItemStackRegistryFromClient(), (EntityPlayerMP) event.player);
+        }
+    }
+>>>>>>> 0c7b9e94d45e4f7db4affde27c137637addbf927
 
     @SubscribeEvent(priority=EventPriority.NORMAL, receiveCanceled=true)
     public void onEvent(PlayerLoggedOutEvent event)
@@ -162,6 +177,7 @@ public class FMLEventHandler
         }
         else if (event.phase == TickEvent.Phase.START && !event.player.worldObj.isRemote)
         {
+<<<<<<< HEAD
             if (!haveRequestedItemStackRegistry)
             {
                 BlockSmith.network.sendToAll(new MessageRequestItemStackRegistryFromClient());
@@ -179,6 +195,17 @@ public class FMLEventHandler
                 haveGivenGift = true;
             }
             
+=======
+//            if (event.player.inventory.getFirstEmptyStack() >= 0 
+//                    && !BlockSmith.proxy.getItemStackRegistry().isEmpty())
+//            {
+//                event.player.inventory.addItemStackToInventory(
+//                        (ItemStack) BlockSmith.proxy.getItemStackRegistry().get(
+//                                event.player.getRNG()
+//                                .nextInt(BlockSmith.proxy.getItemStackRegistry().size())));
+//            }
+          
+>>>>>>> 0c7b9e94d45e4f7db4affde27c137637addbf927
             if (event.player.getCurrentEquippedItem() != null)
             {
                 if (event.player.getCurrentEquippedItem().getItem() == ItemBlock.getItemFromBlock(Blocks.torch))
