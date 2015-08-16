@@ -19,7 +19,11 @@
 
 package com.blogspot.jabelarminecraft.blocksmith.proxy;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import net.minecraft.entity.EntityLiving;
@@ -45,6 +49,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
@@ -80,7 +85,7 @@ public class CommonProxy
     /*
      * Sometimes useful to have list of all item types, including subtypes
      */
-    public List itemStackRegistry = new ArrayList();
+    protected List itemStackRegistry = new ArrayList();
      
     public void fmlLifeCycleEvent(FMLPreInitializationEvent event)
     { 
@@ -127,6 +132,10 @@ public class CommonProxy
     {
         // can do some inter-mod stuff here
 	    initItemStackRegistry();
+	    ByteBuf theBuffer = Unpooled.buffer();
+	    convertItemStackListToPayload(theBuffer);
+        convertPayloadToItemStackList(theBuffer);
+
     }
 
 	public void fmlLifeCycleEvent(FMLServerAboutToStartEvent event) 
@@ -506,13 +515,83 @@ public class CommonProxy
 	    return;
 	}
 	
-	protected void initItemList()
+	public List getItemStackRegistry()
 	{
-	    return;
+	    return itemStackRegistry;
 	}
-	
-//	protected void initializeMapOfItemMetadata()
-//	{
-//		return;
-//	}
+		
+    /*
+     * Works directly on passed in ByteBuf to put ItemStack registry into packet payload to be sent to the server
+     */
+    public void convertItemStackListToPayload(ByteBuf parBuffer)
+    {
+        Iterator theIterator = itemStackRegistry.iterator();
+       
+        // DEBUG
+        String outputString = "Item list payload =";
+
+        while (theIterator.hasNext())
+        {          
+            ItemStack theStack = (ItemStack) theIterator.next();
+            
+            // write item id and metadata
+            parBuffer.writeInt(Item.getIdFromItem(theStack.getItem()));
+            parBuffer.writeInt(theStack.getMetadata());
+            
+            // DEBUG
+            outputString += " "+Item.getIdFromItem(theStack.getItem())+" "+theStack.getMetadata();
+            boolean hasNBT = theStack.hasTagCompound();
+            parBuffer.writeBoolean(hasNBT);
+            // DEBUG
+            outputString += " "+hasNBT;
+            if (hasNBT)
+            {
+                // DEBUG
+                System.out.println("The stack "+theStack.toString()+" has NBT = "+theStack.getTagCompound().toString());
+                outputString+= " = "+theStack.getTagCompound().toString();
+                ByteBufUtils.writeTag(parBuffer, theStack.getTagCompound());
+            }
+            theIterator.remove(); // avoids a ConcurrentModificationException
+        }
+        
+        // DEBUG
+        System.out.println(outputString);
+        
+        return ;
+    }
+
+
+    /*
+     * Provides a list of item stacks giving every registered item along with its metadata variants
+     * based on a message payload from the client that gives the valid metadata values for those
+     * items with variants. Also will include NBT for mods like Tinker's Construct that use NBT on the
+     * ItemStacks to make variants instead of metadata.
+     */
+    public List<ItemStack> convertPayloadToItemStackList(ByteBuf theBuffer)
+    {
+        List<ItemStack> theList = new ArrayList();
+        
+        while (theBuffer.isReadable())
+        {
+            int theID = theBuffer.readInt();
+            int theMetadata = theBuffer.readInt();
+            ItemStack theStack = new ItemStack(Item.getItemById(theID), 1, theMetadata);
+            
+            // Handle the case of mods like Tinker's Construct that use NBT instead of metadata
+            boolean hasNBT = theBuffer.readBoolean();
+            if (hasNBT)
+            {
+                theStack.setTagCompound(ByteBufUtils.readTag(theBuffer));
+                // DEBUG
+                System.out.println("The stack "+theStack.toString()+" has NBT = "+theStack.getTagCompound().toString());
+            }
+            
+           theList.add(theStack);
+        }
+
+        // DEBUG
+        System.out.println(theList.toString());
+
+        return theList;      
+    }
 }
