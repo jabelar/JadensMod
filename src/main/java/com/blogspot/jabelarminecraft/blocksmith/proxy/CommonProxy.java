@@ -20,7 +20,6 @@
 package com.blogspot.jabelarminecraft.blocksmith.proxy;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -66,6 +65,8 @@ import com.blogspot.jabelarminecraft.blocksmith.entities.EntityPigTest;
 import com.blogspot.jabelarminecraft.blocksmith.gui.GuiHandler;
 import com.blogspot.jabelarminecraft.blocksmith.items.SpawnEgg;
 import com.blogspot.jabelarminecraft.blocksmith.networking.MessageExtendedReachAttack;
+import com.blogspot.jabelarminecraft.blocksmith.networking.MessageRequestItemStackRegistryFromClient;
+import com.blogspot.jabelarminecraft.blocksmith.networking.MessageSendItemStackRegistryToServer;
 import com.blogspot.jabelarminecraft.blocksmith.networking.MessageSyncEntityToClient;
 import com.blogspot.jabelarminecraft.blocksmith.networking.MessageToClient;
 import com.blogspot.jabelarminecraft.blocksmith.networking.MessageToServer;
@@ -131,11 +132,7 @@ public class CommonProxy
 	public void fmlLifeCycleEvent(FMLPostInitializationEvent event)
     {
         // can do some inter-mod stuff here
-	    initItemStackRegistry();
-	    ByteBuf theBuffer = Unpooled.buffer();
-	    convertItemStackListToPayload(theBuffer);
-        convertPayloadToItemStackList(theBuffer);
-
+        initItemStackRegistry();    
     }
 
 	public void fmlLifeCycleEvent(FMLServerAboutToStartEvent event) 
@@ -147,7 +144,7 @@ public class CommonProxy
 	public void fmlLifeCycleEvent(FMLServerStartedEvent event) 
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void fmlLifeCycleEvent(FMLServerStoppingEvent event) 
@@ -187,6 +184,8 @@ public class CommonProxy
         BlockSmith.network.registerMessage(MessageToClient.Handler.class, MessageToClient.class, packetId++, Side.CLIENT);
         BlockSmith.network.registerMessage(MessageSyncEntityToClient.Handler.class, MessageSyncEntityToClient.class, packetId++, Side.CLIENT);
         BlockSmith.network.registerMessage(MessageExtendedReachAttack.Handler.class, MessageExtendedReachAttack.class, packetId++, Side.SERVER);
+        BlockSmith.network.registerMessage(MessageSendItemStackRegistryToServer.Handler.class, MessageSendItemStackRegistryToServer.class, packetId++, Side.SERVER);
+        BlockSmith.network.registerMessage(MessageRequestItemStackRegistryFromClient.Handler.class, MessageRequestItemStackRegistryFromClient.class, packetId++, Side.CLIENT);
 	}
 	
 	/*	 
@@ -514,6 +513,11 @@ public class CommonProxy
 	{
 	    return;
 	}
+
+	public void setItemStackRegistry(List parRegistry)
+	{
+	    itemStackRegistry = parRegistry;
+	}
 	
 	public List getItemStackRegistry()
 	{
@@ -527,9 +531,6 @@ public class CommonProxy
     {
         Iterator theIterator = itemStackRegistry.iterator();
        
-        // DEBUG
-        String outputString = "Item list payload =";
-
         while (theIterator.hasNext())
         {          
             ItemStack theStack = (ItemStack) theIterator.next();
@@ -538,24 +539,18 @@ public class CommonProxy
             parBuffer.writeInt(Item.getIdFromItem(theStack.getItem()));
             parBuffer.writeInt(theStack.getMetadata());
             
-            // DEBUG
-            outputString += " "+Item.getIdFromItem(theStack.getItem())+" "+theStack.getMetadata();
+//            // DEBUG
+//            System.out.println(Item.getIdFromItem(theStack.getItem())+" "+theStack.getMetadata());
             boolean hasNBT = theStack.hasTagCompound();
             parBuffer.writeBoolean(hasNBT);
-            // DEBUG
-            outputString += " "+hasNBT;
             if (hasNBT)
             {
                 // DEBUG
                 System.out.println("The stack "+theStack.toString()+" has NBT = "+theStack.getTagCompound().toString());
-                outputString+= " = "+theStack.getTagCompound().toString();
                 ByteBufUtils.writeTag(parBuffer, theStack.getTagCompound());
             }
             theIterator.remove(); // avoids a ConcurrentModificationException
         }
-        
-        // DEBUG
-        System.out.println(outputString);
         
         return ;
     }

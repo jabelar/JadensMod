@@ -35,6 +35,8 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
+import com.blogspot.jabelarminecraft.blocksmith.networking.MessageRequestItemStackRegistryFromClient;
+
 
 public class FMLEventHandler 
 {
@@ -147,6 +149,8 @@ public class FMLEventHandler
 //
 //    }
 
+    boolean haveRequestedItemStackRegistry = false;
+            
     @SubscribeEvent(priority=EventPriority.NORMAL, receiveCanceled=true)
     public void onEvent(PlayerTickEvent event)
     {        
@@ -165,6 +169,12 @@ public class FMLEventHandler
         }
         else if (event.phase == TickEvent.Phase.START && !event.player.worldObj.isRemote)
         {
+            if (!haveRequestedItemStackRegistry)
+            {
+                BlockSmith.network.sendToAll(new MessageRequestItemStackRegistryFromClient());
+                haveRequestedItemStackRegistry = true;
+            }
+            
             if (event.player.getCurrentEquippedItem() != null)
             {
                 if (event.player.getCurrentEquippedItem().getItem() == ItemBlock.getItemFromBlock(Blocks.torch))

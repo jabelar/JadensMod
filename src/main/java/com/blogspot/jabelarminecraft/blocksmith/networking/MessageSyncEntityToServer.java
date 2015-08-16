@@ -86,7 +86,7 @@ public class MessageSyncEntityToServer implements IMessage
                             System.out.println("MessageSyncEnitityToClient onMessage(), entity ID = "+message.entityId);
                             return; 
                         }
-                }
+                    }
             );
             return null; // no response in this case
         }

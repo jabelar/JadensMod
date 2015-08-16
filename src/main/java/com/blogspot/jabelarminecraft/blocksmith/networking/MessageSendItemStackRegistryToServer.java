@@ -18,7 +18,6 @@ package com.blogspot.jabelarminecraft.blocksmith.networking;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -30,59 +29,52 @@ import com.blogspot.jabelarminecraft.blocksmith.BlockSmith;
  *
  */
 public class MessageSendItemStackRegistryToServer implements IMessage 
-{
-    
-    private String text;
-
+{   
     public MessageSendItemStackRegistryToServer() 
-    { 
+    {
     	// need this constructor
-    }
-
-    public MessageSendItemStackRegistryToServer(String parText) 
-    {
-        text = parText;
+        
         // DEBUG
-        System.out.println("MyMessage constructor");
+        System.out.println("Constructor");
     }
 
     @Override
-    public void fromBytes(ByteBuf buf) 
+    public void toBytes(ByteBuf parBuffer) 
     {
-        text = ByteBufUtils.readUTF8String(buf); // this class is very useful in general for writing more complex objects
+        // DEBUG
+        System.out.println("toBytes encoded");
+        BlockSmith.proxy.convertItemStackListToPayload(parBuffer); // appends directly to the buffer passed in
+    }
+
+    @Override
+    public void fromBytes(ByteBuf parBuffer) 
+    {
     	// DEBUG
-    	System.out.println("fromBytes = "+text);
-    }
-
-    @Override
-    public void toBytes(ByteBuf buf) 
-    {
-        ByteBufUtils.writeUTF8String(buf, text);
-        // DEBUG
-        System.out.println("toBytes = "+text);
+    	System.out.println("fromBytes");
+        BlockSmith.proxy.setItemStackRegistry(BlockSmith.proxy.convertPayloadToItemStackList(parBuffer)); 
     }
 
     public static class Handler implements IMessageHandler<MessageSendItemStackRegistryToServer, IMessage> 
     {
-        
         @Override
         public IMessage onMessage(final MessageSendItemStackRegistryToServer message, MessageContext ctx) 
         {
-            // DEBUG
-            System.out.println(String.format("Received %s from %s", message.text, BlockSmith.proxy.getPlayerEntityFromContext(ctx).getDisplayName()));
-            // Know it will be on the server so make it thread-safe
-            final EntityPlayerMP thePlayer = (EntityPlayerMP) BlockSmith.proxy.getPlayerEntityFromContext(ctx);
-            thePlayer.getServerForPlayer().addScheduledTask(
-                    new Runnable()
-                    {
+        	// DEBUG
+        	System.out.println("Message received");
+        	// Know it will be on the server so make it thread-safe
+        	final EntityPlayerMP thePlayer = (EntityPlayerMP) BlockSmith.proxy.getPlayerEntityFromContext(ctx);
+        	thePlayer.getServerForPlayer().addScheduledTask(
+        	        new Runnable()
+                	{
                         @Override
                         public void run() 
                         {
-                            return; 
+                            // don't need to do anything because the fromBytes operates directly 
+                            // on public field in main class
                         }
-                }
-            );
-            return null; // no response in this case
-        }
+                	}
+        	        );
+         	return null; // no response message
+    	}
     }
 }

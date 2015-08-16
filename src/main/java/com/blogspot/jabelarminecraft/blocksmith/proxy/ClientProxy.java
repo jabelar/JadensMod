@@ -113,7 +113,8 @@ public class ClientProxy extends CommonProxy
         BlockSmith.versionChecker = new VersionChecker();
         Thread versionCheckThread = new Thread(BlockSmith.versionChecker, "Version Check");
         versionCheckThread.start();
-    }
+
+}
 
     /*
      * Registers key bindings
@@ -257,7 +258,7 @@ public class ClientProxy extends CommonProxy
 		
 		// DEBUG
 		System.out.println("ItemStack registry = "+itemStackRegistry.toString());
-		
+
 		return;
     }
 }
