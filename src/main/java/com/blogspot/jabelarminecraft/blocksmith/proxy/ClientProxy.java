@@ -252,45 +252,56 @@ public class ClientProxy extends CommonProxy
        GL11.glEndList();
     }
     
+    /*
+     * This initializes the Map in the public field itemListFromRegistry with all 
+     */
     @Override
-	protected void getSubTypesForItems()
+	protected void initMapOfItemsFromRegistry()
     {
 		List subItemList = new ArrayList();
 		for (Object theObj: Item.itemRegistry)
 		{
 			((Item)theObj).getSubItems((Item)theObj, null, subItemList);
-			itemListFromRegistry.put(Item.itemRegistry.getIDForObject(theObj), subItemList.size());
+			itemMapFromRegistry.put(Item.itemRegistry.getIDForObject(theObj), subItemList.size());
 			subItemList.clear();
 		}
 		
 		// DEBUG
-		System.out.println("Item subtypes list = "+itemListFromRegistry.toString() );
-    }
-    
-    @Override
-	protected void initializeMapOfItemMetadata()
-    {
-		Iterator theIterator = itemListFromRegistry.entrySet().iterator();
-
-		itemSubTypeMap.clear();
-		while (theIterator.hasNext())
-		{
-	        Map.Entry<Integer, Integer> pair = (Map.Entry)theIterator.next();
-        	itemSubTypeMap.put(pair.getKey(), pair.getValue());
-	        theIterator.remove(); // avoids a ConcurrentModificationException
-		}
+		System.out.println("Item subtypes list = "+itemMapFromRegistry.toString());
 		
+		return;
+    }
+
+    @Override
+    public void initItemList()
+    {
+        initMapOfItemsFromRegistry();
+        
+        Iterator theIterator = itemMapFromRegistry.entrySet().iterator();
+       
+        while (theIterator.hasNext())
+        {            
+            Map.Entry<Integer, Integer> pair = (Map.Entry)theIterator.next();
+            ArrayList<ItemStack> subTypes = new ArrayList();
+            Item theItem = Item.getItemById(pair.getKey());
+            theItem.getSubItems(theItem, null, subTypes); // This updates the subTypes list passed in
+            itemList.addAll(subTypes);
+            theIterator.remove(); // avoids a ConcurrentModificationException
+        }
+        
         // DEBUG
-        System.out.println("Sparse item id list = "+itemSubTypeMap.toString());
-   }
-    
+        System.out.println("Item list = "+itemList.toString());
+        
+        return;
+    }
+
     public ByteBuf getItemListPayload()
     {
         ByteBuf theBuffer = Unpooled.buffer();
-        Iterator theIterator = itemSubTypeMap.entrySet().iterator();
+        Iterator theIterator = itemMapFromRegistry.entrySet().iterator();
        
         // DEBUG
-        String outputString = "Sparse items with metadata = ";
+        String outputString = "Item list payload = ";
 
         while (theIterator.hasNext())
         {            
@@ -343,8 +354,6 @@ public class ClientProxy extends CommonProxy
         // First add everything from the buffer
         while (theBuffer.isReadable())
         {
-//            // DEBUG
-//            System.out.println("The reader index ="+theBuffer.readerIndex());
             int theID = theBuffer.readInt();
             byte numVariants = theBuffer.readByte();
             for (int i = 0; i < numVariants; i++)
@@ -354,6 +363,8 @@ public class ClientProxy extends CommonProxy
                 if (hasNBT)
                 {
                     theStack.setTagCompound(ByteBufUtils.readTag(theBuffer));
+                    // DEBUG
+                    System.out.println("The stack "+theStack.toString()+" has NBT = "+theStack.getTagCompound().toString());
                 }
                theList.add(theStack);
             }

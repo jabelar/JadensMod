@@ -17,6 +17,8 @@
 package com.blogspot.jabelarminecraft.blocksmith.items;
 
 
+import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -25,11 +27,14 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import com.blogspot.jabelarminecraft.blocksmith.BlockSmith;
 import com.blogspot.jabelarminecraft.blocksmith.utilities.Utilities;
@@ -116,6 +121,21 @@ public class ItemSheepSkin extends Item
 
             return parHeldItemStack;
         }
+    }
+
+    @SideOnly(Side.CLIENT)
+    /**
+     * returns a list of items with the same ID, but different meta (eg: dye returns 16 items)
+     */
+    @Override
+    public void getSubItems (Item par1, CreativeTabs par2CreativeTabs, List par3List)
+    {
+        ItemStack item = new ItemStack(par1, 1, 0);
+        NBTTagCompound compound = new NBTTagCompound();
+        compound.setString("TargetLock", "test");
+
+        item.setTagCompound(compound);
+        par3List.add(item);
     }
 
 }
