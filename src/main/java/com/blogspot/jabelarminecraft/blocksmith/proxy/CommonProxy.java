@@ -20,9 +20,7 @@
 package com.blogspot.jabelarminecraft.blocksmith.proxy;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
@@ -82,8 +80,7 @@ public class CommonProxy
     /*
      * Sometimes useful to have list of all item types, including subtypes
      */
-    public List itemList = new ArrayList();
-	public Map<Integer, Integer> itemMapFromRegistry = new HashMap<Integer, Integer>();
+    public List itemStackRegistry = new ArrayList();
      
     public void fmlLifeCycleEvent(FMLPreInitializationEvent event)
     { 
@@ -129,9 +126,7 @@ public class CommonProxy
 	public void fmlLifeCycleEvent(FMLPostInitializationEvent event)
     {
         // can do some inter-mod stuff here
-	    initItemList();
-//        initMapOfItemsFromRegistry();
-//        initializeMapOfItemMetadata();
+	    initItemStackRegistry();
     }
 
 	public void fmlLifeCycleEvent(FMLServerAboutToStartEvent event) 
@@ -506,7 +501,7 @@ public class CommonProxy
 		
 	}
 	
-	protected void initMapOfItemsFromRegistry()
+	protected void initItemStackRegistry()
 	{
 	    return;
 	}

@@ -25,7 +25,6 @@ import io.netty.buffer.Unpooled;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelPig;
@@ -124,7 +123,7 @@ public class ClientProxy extends CommonProxy
         Thread versionCheckThread = new Thread(BlockSmith.versionChecker, "Version Check");
         versionCheckThread.start();
         
-        getCompleteItemStackList(getItemListPayload());
+        convertPayloadToItemStackList(convertItemStackListToPayload());
     }
 
     /*
@@ -253,84 +252,57 @@ public class ClientProxy extends CommonProxy
     }
     
     /*
-     * This initializes the Map in the public field itemListFromRegistry with all 
+     * This initializes the List in the public field itemListFromRegistry with all possilbe
+     * ItemStack types (all valid metadata values, as well as any NBT that is used to create variants
+     * in mods like Tinker's Construct).
      */
     @Override
-	protected void initMapOfItemsFromRegistry()
+	protected void initItemStackRegistry()
     {
-		List subItemList = new ArrayList();
+		itemStackRegistry.clear();
+		
 		for (Object theObj: Item.itemRegistry)
 		{
-			((Item)theObj).getSubItems((Item)theObj, null, subItemList);
-			itemMapFromRegistry.put(Item.itemRegistry.getIDForObject(theObj), subItemList.size());
-			subItemList.clear();
+			((Item)theObj).getSubItems((Item)theObj, null, itemStackRegistry); // this method directly appends to ItemStackRegistry
 		}
 		
 		// DEBUG
-		System.out.println("Item subtypes list = "+itemMapFromRegistry.toString());
+		System.out.println("ItemStack registry = "+itemStackRegistry.toString());
 		
 		return;
     }
 
-    @Override
-    public void initItemList()
-    {
-        initMapOfItemsFromRegistry();
-        
-        Iterator theIterator = itemMapFromRegistry.entrySet().iterator();
-       
-        while (theIterator.hasNext())
-        {            
-            Map.Entry<Integer, Integer> pair = (Map.Entry)theIterator.next();
-            ArrayList<ItemStack> subTypes = new ArrayList();
-            Item theItem = Item.getItemById(pair.getKey());
-            theItem.getSubItems(theItem, null, subTypes); // This updates the subTypes list passed in
-            itemList.addAll(subTypes);
-            theIterator.remove(); // avoids a ConcurrentModificationException
-        }
-        
-        // DEBUG
-        System.out.println("Item list = "+itemList.toString());
-        
-        return;
-    }
-
-    public ByteBuf getItemListPayload()
+    /*
+     * Returns a ByteBuf suitable to be used as a packet payload to be sent to the server
+     */
+    public ByteBuf convertItemStackListToPayload()
     {
         ByteBuf theBuffer = Unpooled.buffer();
-        Iterator theIterator = itemMapFromRegistry.entrySet().iterator();
+        Iterator theIterator = itemStackRegistry.iterator();
        
         // DEBUG
-        String outputString = "Item list payload = ";
+        String outputString = "Item list payload =";
 
         while (theIterator.hasNext())
-        {            
-            Map.Entry<Integer, Integer> pair = (Map.Entry)theIterator.next();
+        {          
+            ItemStack theStack = (ItemStack) theIterator.next();
             
-            // write item id and number of sub-types
-            theBuffer.writeInt(pair.getKey());
-            theBuffer.writeByte(pair.getValue());
+            // write item id and metadata
+            theBuffer.writeInt(Item.getIdFromItem(theStack.getItem()));
+            theBuffer.writeInt(theStack.getMetadata());
             
             // DEBUG
-            outputString += " id = "+pair.getKey()+" "+pair.getValue();
-            
-            // write metadata values for each of the sub-types
-            ArrayList<ItemStack> subTypes = new ArrayList();
-            Item theItem = Item.getItemById(pair.getKey());
-            theItem.getSubItems(theItem, null, subTypes); // This updates the subTypes list passed in
-            for (int i = 0; i < subTypes.size(); i++)
+            outputString += " "+Item.getIdFromItem(theStack.getItem())+" "+theStack.getMetadata();
+            boolean hasNBT = theStack.hasTagCompound();
+            theBuffer.writeBoolean(hasNBT);
+            // DEBUG
+            outputString += " "+hasNBT;
+            if (hasNBT)
             {
-                theBuffer.writeInt(subTypes.get(i).getMetadata());
                 // DEBUG
-                outputString += " "+subTypes.get(i).getMetadata();
-                boolean hasNBT = subTypes.get(i).hasTagCompound();
-                theBuffer.writeBoolean(hasNBT);
-                if (hasNBT)
-                {
-                    // DEBUG
-                    outputString+= " has NBT";
-                    ByteBufUtils.writeTag(theBuffer, subTypes.get(i).getTagCompound());
-                }
+                System.out.println("The stack "+theStack.toString()+" has NBT = "+theStack.getTagCompound().toString());
+                outputString+= " = "+theStack.getTagCompound().toString();
+                ByteBufUtils.writeTag(theBuffer, theStack.getTagCompound());
             }
             theIterator.remove(); // avoids a ConcurrentModificationException
         }
@@ -345,34 +317,31 @@ public class ClientProxy extends CommonProxy
     /*
      * Provides a list of item stacks giving every registered item along with its metadata variants
      * based on a message payload from the client that gives the valid metadata values for those
-     * items with variants.
+     * items with variants. Also will include NBT for mods like Tinker's Construct that use NBT on the
+     * ItemStacks to make variants instead of metadata.
      */
-    public List<ItemStack> getCompleteItemStackList(ByteBuf theBuffer)
+    public List<ItemStack> convertPayloadToItemStackList(ByteBuf theBuffer)
     {
         List<ItemStack> theList = new ArrayList();
         
-        // First add everything from the buffer
         while (theBuffer.isReadable())
         {
             int theID = theBuffer.readInt();
-            byte numVariants = theBuffer.readByte();
-            for (int i = 0; i < numVariants; i++)
+            int theMetadata = theBuffer.readInt();
+            ItemStack theStack = new ItemStack(Item.getItemById(theID), 1, theMetadata);
+            
+            // Handle the case of mods like Tinker's Construct that use NBT instead of metadata
+            boolean hasNBT = theBuffer.readBoolean();
+            if (hasNBT)
             {
-                ItemStack theStack = new ItemStack(Item.getItemById(theID), 1, theBuffer.readInt());
-                boolean hasNBT = theBuffer.readBoolean();
-                if (hasNBT)
-                {
-                    theStack.setTagCompound(ByteBufUtils.readTag(theBuffer));
-                    // DEBUG
-                    System.out.println("The stack "+theStack.toString()+" has NBT = "+theStack.getTagCompound().toString());
-                }
-               theList.add(theStack);
+                theStack.setTagCompound(ByteBufUtils.readTag(theBuffer));
+                // DEBUG
+                System.out.println("The stack "+theStack.toString()+" has NBT = "+theStack.getTagCompound().toString());
             }
+            
+           theList.add(theStack);
         }
 
-        // Then add everything else from the item registry
-        
-        
         // DEBUG
         System.out.println(theList.toString());
 
