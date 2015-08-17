@@ -13,8 +13,8 @@
 
     For a copy of the GNU General Public License see <http://www.gnu.org/licenses/>.
 
-	If you're interested in licensing the code under different terms you can
-	contact the author at julian_abelar@hotmail.com 
+    If you're interested in licensing the code under different terms you can
+    contact the author at julian_abelar@hotmail.com 
 */
 
 package com.blogspot.jabelarminecraft.blocksmith.proxy;
@@ -103,11 +103,11 @@ public class CommonProxy
         registerFuelHandlers();
         registerSimpleNetworking();
 //        VillagerRegistry.instance().registerVillagerId(10);
-//		VillagerRegistry.instance().registerVillageTradeHandler(10, new VillageTradeHandlerMagicBeans());
-//		VillagerRegistry.getRegisteredVillagers();
+//      VillagerRegistry.instance().registerVillageTradeHandler(10, new VillageTradeHandlerMagicBeans());
+//      VillagerRegistry.getRegisteredVillagers();
     }
 
-	public void fmlLifeCycleEvent(FMLInitializationEvent event)
+    public void fmlLifeCycleEvent(FMLInitializationEvent event)
     {
         // register custom event listeners
         registerEventListeners();
@@ -126,59 +126,59 @@ public class CommonProxy
     
     public void registerGuiHandlers() 
     {
-    	NetworkRegistry.INSTANCE.registerGuiHandler(BlockSmith.instance, new GuiHandler());		
-	}
+        NetworkRegistry.INSTANCE.registerGuiHandler(BlockSmith.instance, new GuiHandler());     
+    }
 
-	public void fmlLifeCycleEvent(FMLPostInitializationEvent event)
+    public void fmlLifeCycleEvent(FMLPostInitializationEvent event)
     {
         // can do some inter-mod stuff here
         initItemStackRegistry();    
     }
 
-	public void fmlLifeCycleEvent(FMLServerAboutToStartEvent event) 
-	{
-		// TODO Auto-generated method stub
-		
-	}
+    public void fmlLifeCycleEvent(FMLServerAboutToStartEvent event) 
+    {
+        // TODO Auto-generated method stub
+        
+    }
 
-	public void fmlLifeCycleEvent(FMLServerStartedEvent event) 
-	{
-		// TODO Auto-generated method stub
+    public void fmlLifeCycleEvent(FMLServerStartedEvent event) 
+    {
+        // TODO Auto-generated method stub
 
-	}
+    }
 
-	public void fmlLifeCycleEvent(FMLServerStoppingEvent event) 
-	{
-		// TODO Auto-generated method stub
-		
-	}
+    public void fmlLifeCycleEvent(FMLServerStoppingEvent event) 
+    {
+        // TODO Auto-generated method stub
+        
+    }
 
-	public void fmlLifeCycleEvent(FMLServerStoppedEvent event) 
-	{
-		// TODO Auto-generated method stub
-		
-	}
+    public void fmlLifeCycleEvent(FMLServerStoppedEvent event) 
+    {
+        // TODO Auto-generated method stub
+        
+    }
 
-	public void fmlLifeCycleEvent(FMLServerStartingEvent event) 
-	{
-		// // register server commands
+    public void fmlLifeCycleEvent(FMLServerStartingEvent event) 
+    {
+        // // register server commands
         event.registerServerCommand(new CommandStructureCapture());
-	}
-		
+    }
+        
     /*
-	 * Thanks to diesieben07 tutorial for this code
-	 */
-	/**
-	 * Registers the simple networking channel and messages for both sides
-	 */
-	protected void registerSimpleNetworking() 
-	{
-		// DEBUG
-		System.out.println("registering simple networking");
-		BlockSmith.network = NetworkRegistry.INSTANCE.newSimpleChannel(BlockSmith.NETWORK_CHANNEL_NAME);
+     * Thanks to diesieben07 tutorial for this code
+     */
+    /**
+     * Registers the simple networking channel and messages for both sides
+     */
+    protected void registerSimpleNetworking() 
+    {
+        // DEBUG
+        System.out.println("registering simple networking");
+        BlockSmith.network = NetworkRegistry.INSTANCE.newSimpleChannel(BlockSmith.NETWORK_CHANNEL_NAME);
 
-		int packetId = 0;
-		// register messages from client to server
+        int packetId = 0;
+        // register messages from client to server
         BlockSmith.network.registerMessage(MessageToServer.Handler.class, MessageToServer.class, packetId++, Side.SERVER);
         // register messages from server to client
         BlockSmith.network.registerMessage(MessageToClient.Handler.class, MessageToClient.class, packetId++, Side.CLIENT);
@@ -186,23 +186,23 @@ public class CommonProxy
         BlockSmith.network.registerMessage(MessageExtendedReachAttack.Handler.class, MessageExtendedReachAttack.class, packetId++, Side.SERVER);
         BlockSmith.network.registerMessage(MessageSendItemStackRegistryToServer.Handler.class, MessageSendItemStackRegistryToServer.class, packetId++, Side.SERVER);
         BlockSmith.network.registerMessage(MessageRequestItemStackRegistryFromClient.Handler.class, MessageRequestItemStackRegistryFromClient.class, packetId++, Side.CLIENT);
-	}
-	
-	/*	 
-	 * Thanks to CoolAlias for this tip!
-	 */
-	/**
-	 * Returns a side-appropriate EntityPlayer for use during message handling
-	 */
-	public EntityPlayer getPlayerEntityFromContext(MessageContext ctx) 
-	{
-		return ctx.getServerHandler().playerEntity;
-	}
+    }
     
-	/**
-	 * Process the configuration
-	 * @param event
-	 */
+    /*   
+     * Thanks to CoolAlias for this tip!
+     */
+    /**
+     * Returns a side-appropriate EntityPlayer for use during message handling
+     */
+    public EntityPlayer getPlayerEntityFromContext(MessageContext ctx) 
+    {
+        return ctx.getServerHandler().playerEntity;
+    }
+    
+    /**
+     * Process the configuration
+     * @param event
+     */
     protected void initConfig(FMLPreInitializationEvent event)
     {
         // might need to use suggestedConfigFile (event.getSuggestedConfigFile) location to publish
@@ -222,7 +222,7 @@ public class CommonProxy
      */
     public void syncConfig()
     {
-    	BlockSmith.config.load();
+        BlockSmith.config.load();
         BlockSmith.allowDeconstructUnrealistic = BlockSmith.config.get(Configuration.CATEGORY_GENERAL, "All Craftables Can Deconstruct", false, "Allow unrealistic deconstruction like pumpkins back from pumpkin seeds").getBoolean(false);
         // DEBUG
         System.out.println("Allow unrealistic deconstruction = "+BlockSmith.allowDeconstructUnrealistic);
@@ -247,17 +247,17 @@ public class CommonProxy
     public void registerBlocks()
     {
         //example: GameRegistry.registerBlock(blockTomato, "tomatoes");
-    	GameRegistry.registerBlock(BlockSmith.blockTanningRack, BlockSmith.blockTanningRack.getUnlocalizedName().substring(5));
-    	GameRegistry.registerBlock(BlockSmith.blockGrinder, BlockSmith.blockGrinder.getUnlocalizedName().substring(5));
-    	GameRegistry.registerBlock(BlockSmith.blockCompactor, BlockSmith.blockCompactor.getUnlocalizedName().substring(5));
+        GameRegistry.registerBlock(BlockSmith.blockTanningRack, BlockSmith.blockTanningRack.getUnlocalizedName().substring(5));
+        GameRegistry.registerBlock(BlockSmith.blockGrinder, BlockSmith.blockGrinder.getUnlocalizedName().substring(5));
+        GameRegistry.registerBlock(BlockSmith.blockCompactor, BlockSmith.blockCompactor.getUnlocalizedName().substring(5));
         GameRegistry.registerBlock(BlockSmith.blockDeconstructor, BlockSmith.blockDeconstructor.getUnlocalizedName().substring(5));
         GameRegistry.registerBlock(BlockSmith.blockForge, BlockSmith.blockForge.getUnlocalizedName().substring(5));
 //        GameRegistry.registerBlock(BlockSmith.blockForgeLit, BlockSmith.blockForgeLit.getUnlocalizedName().substring(5));
         GameRegistry.registerBlock(BlockSmith.blockMovingLightSource, BlockSmith.blockMovingLightSource.getUnlocalizedName().substring(5));
-    	
+        
         // each instance of your block should have a name that is unique within your mod.  use lower case.
         // you don't need to register an item corresponding to the block, GameRegistry.registerBlock does this automatically.
-    	
+        
     }
 
     /** 
@@ -315,53 +315,53 @@ public class CommonProxy
         //        GameRegistry.addShapelessRecipe(output, params);
         //        GameRegistry.addSmelting(input, output, xp);
         GameRegistry.addShapedRecipe(new ItemStack(Item.getItemFromBlock(BlockSmith.blockGrinder), 1), 
-        		new Object[]
-        		{
-        			"ABA",
-        			"A A",
-        			"CCC",
-        			'A', Items.stick, 'B', Blocks.stone, 'C', Blocks.cobblestone
-        		});
+                new Object[]
+                {
+                    "ABA",
+                    "A A",
+                    "CCC",
+                    'A', Items.stick, 'B', Blocks.stone, 'C', Blocks.cobblestone
+                });
         GameRegistry.addShapedRecipe(new ItemStack(BlockSmith.blockDeconstructor), 
-        		new Object[]
-        		{
-                	"SSS", 
-                	"SXS", 
-                	"SSS", 
-                	'X', Blocks.crafting_table, 'S', Blocks.cobblestone
-        		});
+                new Object[]
+                {
+                    "SSS", 
+                    "SXS", 
+                    "SSS", 
+                    'X', Blocks.crafting_table, 'S', Blocks.cobblestone
+                });
         GameRegistry.addShapedRecipe(new ItemStack(Items.iron_horse_armor), 
-        		new Object[]
-        		{
-        			"  S", 
-        			"SXS", 
-        			"SSS", 
-        			'X', Blocks.wool, 'S', Items.iron_ingot
-        		});
+                new Object[]
+                {
+                    "  S", 
+                    "SXS", 
+                    "SSS", 
+                    'X', Blocks.wool, 'S', Items.iron_ingot
+                });
         GameRegistry.addShapedRecipe(new ItemStack(Items.golden_horse_armor), 
-        		new Object[]
-        		{
-        			"  S", 
-        			"SXS", 
-        			"SSS", 
-        			'X', Blocks.wool, 'S', Items.gold_ingot
-        		});
+                new Object[]
+                {
+                    "  S", 
+                    "SXS", 
+                    "SSS", 
+                    'X', Blocks.wool, 'S', Items.gold_ingot
+                });
         GameRegistry.addShapedRecipe(new ItemStack(Items.diamond_horse_armor), 
-        		new Object[]
-        		{
-        			"  S", 
-        			"SXS", 
-        			"SSS", 
-        			'X', Blocks.wool, 'S', Items.diamond
-        		});
+                new Object[]
+                {
+                    "  S", 
+                    "SXS", 
+                    "SSS", 
+                    'X', Blocks.wool, 'S', Items.diamond
+                });
         GameRegistry.addShapedRecipe(new ItemStack(Items.saddle), 
-        		new Object[]
-        		{
-        			"SSS", 
-        			"SXS", 
-        			"X X", 
-        			'X', Items.iron_ingot, 'S', Items.leather
-        		});
+                new Object[]
+                {
+                    "SSS", 
+                    "SXS", 
+                    "X X", 
+                    'X', Items.iron_ingot, 'S', Items.leather
+                });
 
     }
 
@@ -401,18 +401,18 @@ public class CommonProxy
      }
 
      public void registerModEntityWithEgg(Class parEntityClass, String parEntityName, 
-    	      int parEggColor, int parEggSpotsColor)
-	{
-	    registerModEntity(parEntityClass, parEntityName);
-	    registerSpawnEgg(parEntityName, parEggColor, parEggSpotsColor);
-	}
+              int parEggColor, int parEggSpotsColor)
+    {
+        registerModEntity(parEntityClass, parEntityName);
+        registerSpawnEgg(parEntityName, parEggColor, parEggSpotsColor);
+    }
 
      // can't use vanilla spawn eggs with entities registered with modEntityID, so use custom eggs.
      // name passed must match entity name string
      public void registerSpawnEgg(String parSpawnName, int parEggColor, int parEggSpotsColor)
      {
-    	 Item itemSpawnEgg = new SpawnEgg(parSpawnName, parEggColor, parEggSpotsColor);
-    	 GameRegistry.registerItem(itemSpawnEgg, itemSpawnEgg.getUnlocalizedName().substring(5));
+         Item itemSpawnEgg = new SpawnEgg(parSpawnName, parEggColor, parEggSpotsColor);
+         GameRegistry.registerItem(itemSpawnEgg, itemSpawnEgg.getUnlocalizedName().substring(5));
      }
 
      /**
@@ -452,7 +452,7 @@ public class CommonProxy
          for (int i=0; i<allBiomes.length; i++)
          {
              EntityRegistry.addSpawn(parEntity.getClass(), parChance, parMinGroup, parMaxGroup, EnumCreatureType.CREATURE, 
-           	      allBiomes[i]); //change the values to vary the spawn rarity, biome, etc.             	
+                  allBiomes[i]); //change the values to vary the spawn rarity, biome, etc.              
          }
      }
      
@@ -468,31 +468,31 @@ public class CommonProxy
         // example: GameRegistry.registerFuelHandler(handler);
      }
  
-	/**
+    /**
      * Register event listeners
      */
-	protected void registerEventListeners() 
-	{
-		// DEBUG
-		System.out.println("Registering event listeners");
+    protected void registerEventListeners() 
+    {
+        // DEBUG
+        System.out.println("Registering event listeners");
 
-		MinecraftForge.EVENT_BUS.register(new EventHandler());
+        MinecraftForge.EVENT_BUS.register(new EventHandler());
         MinecraftForge.TERRAIN_GEN_BUS.register(new TerrainGenEventHandler());
         MinecraftForge.ORE_GEN_BUS.register(new OreGenEventHandler());        
 
         // some events, especially tick, is handled on FML bus
         FMLCommonHandler.instance().bus().register(new FMLEventHandler());
     }
-	
-	/**
-	 * Register achievements
-	 */
-	protected void registerAchievements()
-	{
-		BlockSmith.achievementTanningAHide = new Achievement("achievement.tanningahide", "tanningahide", 0, 0, Items.leather, (Achievement)null);
-		BlockSmith.achievementTanningAHide.registerStat().initIndependentStat(); // Eclipse is having trouble chaining these in previous line
-//		BlockSmith.achievementGiantSlayer = new Achievement("achievement.giantslayer", "giantslayer", 2, 1, (Item)null, BlockSmith.achievementTanningAHide).setSpecial();
-//		BlockSmith.achievementGiantSlayer.registerStat(); // Eclipse is having trouble chaining this in previous line
+    
+    /**
+     * Register achievements
+     */
+    protected void registerAchievements()
+    {
+        BlockSmith.achievementTanningAHide = new Achievement("achievement.tanningahide", "tanningahide", 0, 0, Items.leather, (Achievement)null);
+        BlockSmith.achievementTanningAHide.registerStat().initIndependentStat(); // Eclipse is having trouble chaining these in previous line
+//      BlockSmith.achievementGiantSlayer = new Achievement("achievement.giantslayer", "giantslayer", 2, 1, (Item)null, BlockSmith.achievementTanningAHide).setSpecial();
+//      BlockSmith.achievementGiantSlayer.registerStat(); // Eclipse is having trouble chaining this in previous line
         BlockSmith.craftTable = (Achievement) new Achievement("createDecraftTable", "createDecraftTable", 1 - 2 - 2, -1 - 3, BlockSmith.blockDeconstructor, null).registerStat();
         BlockSmith.deconstructAny = (Achievement) new Achievement("deconstructAnything", "deconstructAnything", 2 - 2, -2 - 2, Items.diamond_hoe, BlockSmith.craftTable).registerStat();
         BlockSmith.deconstructDiamondHoe = (Achievement) new Achievement("deconstructDiamondHoe", "deconstructDiamondHoe", 2 - 2, 0 - 2, Items.diamond_hoe, BlockSmith.deconstructAny).registerStat();
@@ -502,32 +502,32 @@ public class CommonProxy
         AchievementPage.registerAchievementPage(new AchievementPage("BlockSmith",
                 new Achievement[]
                 {
-        		BlockSmith.craftTable, BlockSmith.deconstructAny, BlockSmith.deconstructDiamondHoe, BlockSmith.deconstructJunk, BlockSmith.deconstructDiamondShovel, BlockSmith.theHatStandAchievement
+                BlockSmith.craftTable, BlockSmith.deconstructAny, BlockSmith.deconstructDiamondHoe, BlockSmith.deconstructJunk, BlockSmith.deconstructDiamondShovel, BlockSmith.theHatStandAchievement
                 }));
 
         BlockSmith.deconstructedItemsStat = (StatBasic) (new StatBasic("stat.deconstructeditems", new ChatComponentTranslation("stat.deconstructeditems", new Object[0])).registerStat());
-		
-	}
-	
-	protected void initItemStackRegistry()
-	{
-	    return;
-	}
+        
+    }
+    
+    protected void initItemStackRegistry()
+    {
+        return;
+    }
 
-	public void setItemStackRegistry(List parRegistry)
-	{
-	    itemStackRegistry = parRegistry;
-	}
-	
-	public List getItemStackRegistry()
-	{
-	    return itemStackRegistry;
-	}
-		
+    public void setItemStackRegistry(List parRegistry)
+    {
+        itemStackRegistry = parRegistry;
+    }
+    
+    public List getItemStackRegistry()
+    {
+        return itemStackRegistry;
+    }
+        
     /*
      * Works directly on passed in ByteBuf to put ItemStack registry into packet payload to be sent to the server
      */
-    public void convertItemStackListToPayload(ByteBuf theBuffer)
+    public void convertItemStackListToPayload(ByteBuf parBuffer)
     {
         Iterator theIterator = itemStackRegistry.iterator();
        
@@ -536,24 +536,22 @@ public class CommonProxy
             ItemStack theStack = (ItemStack) theIterator.next();
             
             // write item id and metadata
-            ByteBufUtils.writeVarInt(theBuffer, Item.getIdFromItem(theStack.getItem()), 4);
-            ByteBufUtils.writeVarInt(theBuffer, theStack.getMetadata(), 4);
+            parBuffer.writeInt(Item.getIdFromItem(theStack.getItem()));
+            parBuffer.writeInt(theStack.getMetadata());
             
 //            // DEBUG
 //            System.out.println(Item.getIdFromItem(theStack.getItem())+" "+theStack.getMetadata());
-
-            // indicate whether there is NBT and write it if there is some
             boolean hasNBT = theStack.hasTagCompound();
-            theBuffer.writeBoolean(hasNBT);
+            parBuffer.writeBoolean(hasNBT);
             if (hasNBT)
             {
                 // DEBUG
                 System.out.println("The stack "+theStack.toString()+" has NBT = "+theStack.getTagCompound().toString());
-                ByteBufUtils.writeTag(theBuffer, theStack.getTagCompound());
+                ByteBufUtils.writeTag(parBuffer, theStack.getTagCompound());
             }
+            theIterator.remove(); // avoids a ConcurrentModificationException
         }
-        theIterator.remove(); // avoids a ConcurrentModificationException
-                
+        
         return ;
     }
 
@@ -564,21 +562,21 @@ public class CommonProxy
      * items with variants. Also will include NBT for mods like Tinker's Construct that use NBT on the
      * ItemStacks to make variants instead of metadata.
      */
-    public List<ItemStack> convertPayloadToItemStackList(ByteBuf parBuffer)
+    public List<ItemStack> convertPayloadToItemStackList(ByteBuf theBuffer)
     {
         List<ItemStack> theList = new ArrayList();
         
-        while (parBuffer.isReadable())
+        while (theBuffer.isReadable())
         {
-            int theID = ByteBufUtils.readVarInt(parBuffer, 4);
-            int theMetadata = ByteBufUtils.readVarInt(parBuffer, 4);
+            int theID = theBuffer.readInt();
+            int theMetadata = theBuffer.readInt();
             ItemStack theStack = new ItemStack(Item.getItemById(theID), 1, theMetadata);
             
             // Handle the case of mods like Tinker's Construct that use NBT instead of metadata
-            boolean hasNBT = parBuffer.readBoolean();
+            boolean hasNBT = theBuffer.readBoolean();
             if (hasNBT)
             {
-                theStack.setTagCompound(ByteBufUtils.readTag(parBuffer));
+                theStack.setTagCompound(ByteBufUtils.readTag(theBuffer));
                 // DEBUG
                 System.out.println("The stack "+theStack.toString()+" has NBT = "+theStack.getTagCompound().toString());
             }
@@ -588,8 +586,6 @@ public class CommonProxy
 
         // DEBUG
         System.out.println(theList.toString());
-        
-        parBuffer.release();
 
         return theList;      
     }
