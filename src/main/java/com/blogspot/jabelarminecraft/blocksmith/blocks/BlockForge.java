@@ -251,6 +251,9 @@ public class BlockForge extends BlockFurnace
                 case 4:
                     parWorld.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, d0 + d4, d1, d2 + d3, 0.0D, 0.0D, 0.0D, new int[0]);
                     parWorld.spawnParticle(EnumParticleTypes.FLAME, d0 + d4, d1, d2 + d3, 0.0D, 0.0D, 0.0D, new int[0]);
+                    break;
+                default:
+                    break;
             }
         }
     }

@@ -38,9 +38,9 @@ public class MyModelLoader implements ICustomModelLoader
     private IResourceManager resourceManager;
     
     @Override
-    public void onResourceManagerReload(IResourceManager resourceManager) 
+    public void onResourceManagerReload(IResourceManager parResourceManager) 
     {
-        resourceManager = resourceManager;
+        resourceManager = parResourceManager;
     }
 
     @Override
