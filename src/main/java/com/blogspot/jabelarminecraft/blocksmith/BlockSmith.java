@@ -21,6 +21,19 @@ package com.blogspot.jabelarminecraft.blocksmith;
 
 import java.io.File;
 
+import com.blogspot.jabelarminecraft.blocksmith.blocks.BlockCompactor;
+import com.blogspot.jabelarminecraft.blocksmith.blocks.BlockDeconstructor;
+import com.blogspot.jabelarminecraft.blocksmith.blocks.BlockForge;
+import com.blogspot.jabelarminecraft.blocksmith.blocks.BlockGrinder;
+import com.blogspot.jabelarminecraft.blocksmith.blocks.BlockMovingLightSource;
+import com.blogspot.jabelarminecraft.blocksmith.blocks.BlockTanningRack;
+import com.blogspot.jabelarminecraft.blocksmith.items.ItemCowHide;
+import com.blogspot.jabelarminecraft.blocksmith.items.ItemHorseHide;
+import com.blogspot.jabelarminecraft.blocksmith.items.ItemPigSkin;
+import com.blogspot.jabelarminecraft.blocksmith.items.ItemSheepSkin;
+import com.blogspot.jabelarminecraft.blocksmith.items.ItemSwordExtended;
+import com.blogspot.jabelarminecraft.blocksmith.materials.MaterialTanningRack;
+import com.blogspot.jabelarminecraft.blocksmith.proxy.CommonProxy;
 import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.stats.Achievement;
 import net.minecraft.stats.StatBasic;
@@ -41,25 +54,11 @@ import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.network.FMLEventChannel;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 
-import com.blogspot.jabelarminecraft.blocksmith.blocks.BlockCompactor;
-import com.blogspot.jabelarminecraft.blocksmith.blocks.BlockDeconstructor;
-import com.blogspot.jabelarminecraft.blocksmith.blocks.BlockForge;
-import com.blogspot.jabelarminecraft.blocksmith.blocks.BlockGrinder;
-import com.blogspot.jabelarminecraft.blocksmith.blocks.BlockMovingLightSource;
-import com.blogspot.jabelarminecraft.blocksmith.blocks.BlockTanningRack;
-import com.blogspot.jabelarminecraft.blocksmith.items.ItemCowHide;
-import com.blogspot.jabelarminecraft.blocksmith.items.ItemHorseHide;
-import com.blogspot.jabelarminecraft.blocksmith.items.ItemPigSkin;
-import com.blogspot.jabelarminecraft.blocksmith.items.ItemSheepSkin;
-import com.blogspot.jabelarminecraft.blocksmith.items.ItemSwordExtended;
-import com.blogspot.jabelarminecraft.blocksmith.materials.MaterialTanningRack;
-import com.blogspot.jabelarminecraft.blocksmith.proxy.CommonProxy;
-
-@Mod(modid = 
-      BlockSmith.MODID, 
+@Mod( modid = BlockSmith.MODID, 
       name = BlockSmith.MODNAME, 
       version = BlockSmith.MODVERSION,
-      guiFactory = "com.blogspot.jabelarminecraft."+BlockSmith.MODID+".gui.GuiFactory")
+      guiFactory = "com.blogspot.jabelarminecraft."+BlockSmith.MODID+".gui.GuiFactory",
+      acceptedMinecraftVersions = "[1.8,1.8.9]")
 public class BlockSmith
 {
     public static final String MODID = "blocksmith";
